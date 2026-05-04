@@ -25,7 +25,7 @@ oc_model: true
 oc_model_type: DINOSAUR
 num_slots: 5
 slot_dim: 64
-checkpoint_path: /home/rodya-rad/Desktop/work/OCRL/pretrained_encoders/robosuite.ckpt
+checkpoint_path: /opendilab/pretrained_encoders/robosuite.ckpt
 model_name: vit_base_patch16_224_dino
 input_feature_dim: 768
 num_patches: 196
