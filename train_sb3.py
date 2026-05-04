@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-
 import hydra
 import omegaconf
 import stable_baselines3 as sb3
@@ -27,7 +26,11 @@ def main(config):
         f"{config.env.name}{config.env.mode}mode{config.env.rew_type}rewardtype-"
         f"Seed{config.seed}"
     )
-    tags = config.tags.split(",") + config.env.tags.split(",") + [f"RandomSeed{config.seed}"]
+    tags = [
+        t.strip()
+        for t in (config.tags.split(",") + config.env.tags.split(",") + [f"RandomSeed{config.seed}"])
+        if t.strip() != ""
+    ]
     init_wandb(
         config,
         "TrainSB3-" + log_name,
@@ -35,6 +38,8 @@ def main(config):
         sync_tensorboard=True,
         monitor_gym=True,
     )
+    run_dir = Path(wandb.run.dir)
+    log.info(f"Run directory: {run_dir}")
 
     if config.num_envs == 1:
         def make_env(seed=0):
@@ -63,12 +68,13 @@ def main(config):
             [make_env(i, seed=config.seed) for i in range(config.num_envs)],
             start_method="fork",
         )
-    env = VecVideoRecorder(
-        env,
-        f"{wandb.run.dir}/videos/",
-        record_video_trigger=lambda x: x % config.video.interval == 0,
-        video_length=config.video.length,
-    )
+    if config.video.enable:
+        env = VecVideoRecorder(
+            env,
+            f"{run_dir}/videos/",
+            record_video_trigger=lambda x: x % config.video.interval == 0,
+            video_length=config.video.length,
+        )
     if config.ocr.name == "GT":
         config.env.render_mode = "state"
     eval_env = getattr(envs, config.env.env)(
@@ -77,7 +83,7 @@ def main(config):
     eval_env = Monitor(eval_env)  # record stats such as returns
     model_kwargs = {
         "verbose": 1,
-        "tensorboard_log": f"{wandb.run.dir}/tb_logs/",
+        "tensorboard_log": f"{run_dir}/tb_logs/",
         "device": config.device,
         "policy_kwargs": dict(
             features_extractor_class=sb3s.OCRExtractor,
@@ -101,6 +107,7 @@ def main(config):
     )
     model.learn(
         total_timesteps=config.max_steps,
+        log_interval=1,
         callback=[
             WandbCallback(
                 gradient_save_freq=config.wandb.log_gradient_freq,
@@ -110,13 +117,12 @@ def main(config):
                 eval_env,
                 eval_freq=config.eval.freq,
                 n_eval_episodes=config.eval.n_episodes,
-                best_model_save_path=f"{wandb.run.dir}/models/",
-                log_path=f"{wandb.run.dir}/eval_logs/",
+                best_model_save_path=f"{run_dir}/models/",
+                log_path=f"{run_dir}/eval_logs/",
                 deterministic=False,
             ),
         ],
     )
-    # wandb finish
     wandb.finish()
 
 

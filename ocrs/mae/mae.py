@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 import timm
-assert timm.__version__ == "0.3.2"  # version check
+assert (timm.__version__ == "0.3.2") or (timm.__version__ == "0.6.13")  or (timm.__version__ == "0.9.12") # version check
 import timm.optim.optim_factory as optim_factory
 
 from utils.tools import *

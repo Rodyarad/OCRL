@@ -1,0 +1,31 @@
+defaults:
+  - _self_
+
+name: VizdoomSlotContrast
+env: VizdoomEnv
+env_id: VizdoomDefendLine-v0
+
+mode: "hard"
+rew_type: "sparse"
+tags: "vizdoom,slotcontrast"
+
+num_stacked_obss: 1
+obs_size: 64
+obs_channels: 3
+max_steps: 1000
+
+from_pixels: true
+warp_frame: true
+gray_scale: false
+scale: false
+transform2string: false
+observation_shape: [3, 336, 336]
+
+oc_model: true
+oc_model_type: SlotContrast
+oc_device: cuda
+ocr_config_path: ocrs/slotcontrast/configs/vizdoom_sc.yaml
+checkpoint_path: /path/to/slotcontrast.ckpt
+num_slots: 7
+slot_dim: 64
+game_wrapper: false

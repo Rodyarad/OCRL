@@ -14,6 +14,7 @@ model_name: null
 session_name: null
 num_envs: 4
 video:
+  enable: false
   interval: 5000
   length: 1000
 

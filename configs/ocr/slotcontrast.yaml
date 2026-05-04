@@ -1,0 +1,6 @@
+name: SlotContrast
+num_slots: 7
+slot_dim: 64
+config_path: ""
+checkpoint_path: ""
+device: "cuda"

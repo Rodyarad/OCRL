@@ -8,3 +8,9 @@ from .vaes import VAE, VAE_Module
 #from .vit import ViT, ViT_Module
 from .multiple_cnns import MultipleCNN, MultipleCNN_Module
 from .mae import MAE, MAE_Module
+from .dinosaur import Dinosaur, Dinosaur_Module
+
+try:
+    from .slotcontrast import SlotContrast, SlotContrast_Module
+except Exception:  # optional dependency path; keep other OCR backends usable
+    pass
