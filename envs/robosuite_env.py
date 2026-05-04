@@ -67,7 +67,15 @@ class RobosuiteSlotEnv(gym.Env):
         return obs, {}
 
     def step(self, action):
-        return self._env.step(action)
+        # Legacy gym stack returns (obs, reward, done, info). SB3 Monitor expects Gymnasium:
+        # (obs, reward, terminated, truncated, info).
+        out = self._env.step(action)
+        if len(out) == 5:
+            return out
+        obs, reward, done, info = out
+        truncated = bool(info.get("TimeLimit.truncated", False))
+        terminated = bool(done) and not truncated
+        return obs, reward, terminated, truncated, info
 
     def render(self, mode=None):
         return self._env.render(mode=mode)
