@@ -12,7 +12,7 @@ num_stacked_obss: 1
 obs_size: 64
 obs_channels: 3
 max_steps: 1000
-max_episode_steps: 50
+max_episode_steps: 125
 
 from_pixels: true
 warp_frame: true
