@@ -12,16 +12,16 @@ max_steps: 2e6
 
 model_name: null
 session_name: null
-num_envs: 4
+num_envs: 8
 video:
   enable: false
   interval: 5000
   length: 1000
 
-viz_interval: 30000
+viz_interval: 30000000000
 eval:
-    freq: 1000
-    n_episodes: 100
+    freq: 20000
+    n_episodes: 30
 
 hydra:
   run:
