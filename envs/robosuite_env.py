@@ -1,27 +1,29 @@
 import gym
+import gymnasium.spaces
 import numpy as np
 
 from .robosuite_wrappers import wrap_lightzero
 
 
 def _reconstruct_box_for_subproc(low, high, dtype_str):
-    """Top-level helper so pickle can rebuild a plain Box in the parent process."""
+    """Top-level helper so pickle can rebuild a Gymnasium Box in the parent process."""
     dtype = np.dtype(dtype_str)
-    low = np.asarray(low, dtype=dtype, order="C", copy=True)
-    high = np.asarray(high, dtype=dtype, order="C", copy=True)
-    return gym.spaces.Box(low=low, high=high, dtype=dtype.type)
+    # NumPy < 2: asarray() has no `copy=` kwarg; use np.array(..., copy=True).
+    low = np.array(low, dtype=dtype, copy=True, order="C")
+    high = np.array(high, dtype=dtype, copy=True, order="C")
+    return gymnasium.spaces.Box(low=low, high=high, dtype=dtype.type)
 
 
-class _PickleSafeBox(gym.spaces.Box):
+class _PickleSafeBox(gymnasium.spaces.Box):
     """
-    gym.spaces.Box whose pickle round-trip sends only bounds + dtype.
+    Box whose pickle round-trip sends only bounds + dtype.
 
     SubprocVecEnv pickles observation_space/action_space from workers; default
-    Box can carry np_random / numpy state that breaks unpickling (e.g. NumPy 2.x),
-    surfacing as TypeError inside pickle (_generator_ctor ...).
+    Box can carry RNG state that breaks unpickling. Stable-Baselines3 expects
+    Gymnasium spaces, not legacy gym.spaces.Box.
     """
 
-    def __init__(self, space: gym.spaces.Box):
+    def __init__(self, space):
         dtype = np.dtype(space.dtype)
         low = np.array(space.low, dtype=dtype, copy=True, order="C")
         high = np.array(space.high, dtype=dtype, copy=True, order="C")
@@ -34,8 +36,8 @@ class _PickleSafeBox(gym.spaces.Box):
         return (_reconstruct_box_for_subproc, (low, high, dtype.str))
 
 
-def _as_pickle_safe_box(space: gym.spaces.Space) -> gym.spaces.Space:
-    if isinstance(space, gym.spaces.Box):
+def _as_pickle_safe_box(space):
+    if isinstance(space, (gym.spaces.Box, gymnasium.spaces.Box)):
         return _PickleSafeBox(space)
     return space
 
