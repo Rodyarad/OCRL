@@ -8,11 +8,10 @@ class RobosuiteSlotEnv(gym.Env):
 
     def __init__(self, config, seed=0):
         self._env = wrap_lightzero(config, seed=seed)
-        self._seed = seed
-        self.seed(seed)
-
         self.observation_space = self._env.observation_space
         self.action_space = self._env.action_space
+        self._seed = seed
+        self.seed(seed)
 
     def seed(self, seed=None):
         self._seed = seed
