@@ -60,8 +60,11 @@ class RobosuiteSlotEnv(gym.Env):
             self.action_space.seed(seed)
         return seed
 
-    def reset(self):
-        return self._env.reset()
+    def reset(self, seed=None, options=None, **kwargs):
+        # SB3 VecEnv uses gymnasium-style reset(seed=..., options=...) and expects (obs, info).
+        # Inner stack is legacy gym; SlotExtractorWrapper forwards kwargs with TypeError fallback.
+        obs = self._env.reset(seed=seed, options=options, **kwargs)
+        return obs, {}
 
     def step(self, action):
         return self._env.step(action)

@@ -120,7 +120,8 @@ class RobosuiteEnv(gym.Env):
     def render(self, mode=None):
         return self._last_frame
 
-    def reset(self, seed=None, options=None):
+    def reset(self, seed=None, options=None, **kwargs):
+        # robosuite reset API has no seed/options; absorb kwargs from SB3 / Gymnasium chain.
         self._last_frame = self._process_observation(self._env.reset())
         return self._last_frame
 
