@@ -1,6 +1,6 @@
 batch_size: 24
 num_visualization: 5
-device: 'cpu'
+device: 'cuda'
 tags: ""
 seed: 0
 
