@@ -1,38 +1,11 @@
 import gym
-import gymnasium.spaces
-import numpy as np
+from packaging import version
+import stable_baselines3 as sb3
 
 from .maniskill_wrappers import wrap_lightzero
 
 
-def _reconstruct_box_for_subproc(low, high, dtype_str):
-    """Top-level helper so pickle can rebuild a Gymnasium Box in the parent process."""
-    dtype = np.dtype(dtype_str)
-    low = np.array(low, dtype=dtype, copy=True, order="C")
-    high = np.array(high, dtype=dtype, copy=True, order="C")
-    return gymnasium.spaces.Box(low=low, high=high, dtype=dtype.type)
-
-
-class _PickleSafeBox(gymnasium.spaces.Box):
-    """Box whose pickle round-trip sends only bounds + dtype."""
-
-    def __init__(self, space):
-        dtype = np.dtype(space.dtype)
-        low = np.array(space.low, dtype=dtype, copy=True, order="C")
-        high = np.array(space.high, dtype=dtype, copy=True, order="C")
-        super().__init__(low=low, high=high, dtype=dtype.type)
-
-    def __reduce__(self):
-        dtype = np.dtype(self.dtype)
-        low = np.array(self.low, dtype=dtype, copy=True, order="C")
-        high = np.array(self.high, dtype=dtype, copy=True, order="C")
-        return (_reconstruct_box_for_subproc, (low, high, dtype.str))
-
-
-def _as_pickle_safe_box(space):
-    if isinstance(space, (gym.spaces.Box, gymnasium.spaces.Box)):
-        return _PickleSafeBox(space)
-    return space
+_SB3_GYMNASIUM_API = version.parse(sb3.__version__) >= version.parse("2.0.0")
 
 
 class ManiSkillEnv(gym.Env):
@@ -40,8 +13,8 @@ class ManiSkillEnv(gym.Env):
 
     def __init__(self, config, seed=0):
         self._env = wrap_lightzero(config)
-        self.observation_space = _as_pickle_safe_box(self._env.observation_space)
-        self.action_space = _as_pickle_safe_box(self._env.action_space)
+        self.observation_space = self._env.observation_space
+        self.action_space = self._env.action_space
         self._seed = seed
         self.seed(seed)
 
@@ -54,17 +27,28 @@ class ManiSkillEnv(gym.Env):
         return seed
 
     def reset(self, seed=None, options=None, **kwargs):
-        obs = self._env.reset(seed=seed, options=options, **kwargs)
-        return obs, {}
+        try:
+            obs = self._env.reset(seed=seed, options=options, **kwargs)
+        except TypeError:
+            if seed is not None:
+                self.seed(seed)
+            obs = self._env.reset()
+        return (obs, {}) if _SB3_GYMNASIUM_API else obs
 
     def step(self, action):
         out = self._env.step(action)
+        if _SB3_GYMNASIUM_API:
+            if len(out) == 5:
+                return out
+            obs, reward, done, info = out
+            truncated = bool(info.get("TimeLimit.truncated", False))
+            terminated = bool(done) and not truncated
+            return obs, reward, terminated, truncated, info
         if len(out) == 5:
-            return out
-        obs, reward, done, info = out
-        truncated = bool(info.get("TimeLimit.truncated", False))
-        terminated = bool(done) and not truncated
-        return obs, reward, terminated, truncated, info
+            obs, reward, terminated, truncated, info = out
+            done = bool(terminated or truncated)
+            return obs, reward, done, info
+        return out
 
     def render(self, mode=None):
         return self._env.render(mode=mode)

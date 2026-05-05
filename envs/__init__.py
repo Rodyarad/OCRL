@@ -2,4 +2,9 @@ from .synthetic_envs import RandomObjsEnv, OddOneOutEnv, TargetEnv, PushEnv, Maz
 from .cw_envs import CwTargetEnv
 from .vizdoom_env import VizdoomEnv
 from .maniskill_env import ManiSkillEnv
-from .robosuite_env import RobosuiteSlotEnv
+
+# Keep robosuite optional so non-robosuite runs do not import DINOSAUR dependencies.
+try:
+    from .robosuite_env import RobosuiteSlotEnv
+except Exception:
+    pass

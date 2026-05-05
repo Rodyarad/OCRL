@@ -14,7 +14,6 @@ from easydict import EasyDict
 from gym.wrappers import RecordVideo
 import torch
 from omegaconf import OmegaConf
-from zoo.ocr.tools import Dinosaur
 from collections import namedtuple
 
 from .robosuite import RobosuiteEnv
@@ -80,6 +79,8 @@ def wrap_lightzero(config: EasyDict, seed: int = 0) -> gym.Env:
             slot_extractor = SlotExtractor(model=savi, device='cuda', name_model='SAVi')
         else:
             # Default: DINOSAUR.
+            from zoo.ocr.tools import Dinosaur
+
             dinosaur = Dinosaur(
                 dino_model_name=config.model_name,
                 n_slots=config.num_slots,
