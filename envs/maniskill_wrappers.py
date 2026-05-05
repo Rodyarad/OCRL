@@ -305,8 +305,11 @@ class SlotExtractorWrapper(gym.Wrapper):
             prev_slots = self.slot_extractor(frame, prev_slots=None)
         return self.slot_extractor(frame, prev_slots=prev_slots)
 
-    def reset(self):
-        frame = self.env.reset()
+    def reset(self, seed=None, options=None, **kwargs):
+        try:
+            frame = self.env.reset(seed=seed, options=options, **kwargs)
+        except TypeError:
+            frame = self.env.reset()
         self.prev_slots = self._get_slots(frame, prev_slots=None)
         return self.prev_slots.copy()
 

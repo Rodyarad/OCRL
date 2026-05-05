@@ -20,7 +20,7 @@ video:
 
 viz_interval: 30000000000
 eval:
-    freq: 20000
+    freq: 2500
     n_episodes: 30
 
 hydra:
