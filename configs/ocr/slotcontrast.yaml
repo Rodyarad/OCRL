@@ -1,5 +1,5 @@
 name: SlotContrast
-num_slots: 7
+num_slots: 3
 slot_dim: 64
 config_path: ""
 checkpoint_path: ""

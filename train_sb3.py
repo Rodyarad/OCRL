@@ -20,6 +20,13 @@ log = logging.getLogger(__name__)
 
 @hydra.main(config_path="configs/", config_name="train_sb3")
 def main(config):
+    # Keep OCR shape config aligned with env-produced slot tensors.
+    if hasattr(config, "ocr") and hasattr(config, "env") and hasattr(config.env, "num_slots"):
+        if hasattr(config.ocr, "num_slots"):
+            config.ocr.num_slots = config.env.num_slots
+        if hasattr(config.ocr, "slot_dim") and hasattr(config.env, "slot_dim"):
+            config.ocr.slot_dim = config.env.slot_dim
+
     log_name = get_log_prefix(config)
     log_name += (
         f"-{config.sb3.name}-{config.sb3_acnet.name}-"

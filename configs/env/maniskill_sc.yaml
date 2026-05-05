@@ -24,7 +24,7 @@ observation_shape: [3, 336, 336]
 oc_model: true
 oc_model_type: SlotContrast
 oc_device: cuda
-ocr_config_path: ocrs/slotcontrast/configs/vizdoom_sc.yaml
+ocr_config_path: ocrs/slotcontrast/configs/maniskill_sc.yaml
 checkpoint_path: /path/to/slotcontrast.ckpt
 num_slots: 3
 slot_dim: 64
